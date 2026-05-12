@@ -18,6 +18,7 @@ const allowedOrigins = [
   // Production Vercel frontend URLs
   'https://taskflow-app.vercel.app',
   'https://taskflow-app-git-main-ethical-21.vercel.app',
+      'https://taskflow-app-flame-kappa.vercel.app',
   // Allow any vercel.app subdomain for preview deployments
   process.env.FRONTEND_URL,          // Optional: set in Render env vars
 ].filter(Boolean);                   // Remove undefined entries
