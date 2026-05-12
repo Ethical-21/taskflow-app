@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
-const User = require('../models/User');
+const User = require('../models/user');
 const Admin = require('../models/Admin');
 const Manager = require('../models/Manager');
 
