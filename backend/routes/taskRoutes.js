@@ -27,15 +27,23 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Get all tasks - Fix #4: role-based access
-// Admin & Manager see ALL tasks; Team Member sees only their own
+// Get all tasks - role-based access
+// Admin & Manager: see ALL tasks
+// Team Member: see tasks assigned TO them OR created BY them
 router.get('/', authMiddleware, async (req, res) => {
   try {
     let tasks;
     if (req.user.role === 'Admin' || req.user.role === 'Manager') {
       tasks = await Task.find({}).sort({ createdAt: -1 });
     } else {
-      tasks = await Task.find({ user: req.user.userId }).sort({ createdAt: -1 });
+      // Key fix: $or matches EITHER assignee field OR the user (creator) field
+      tasks = await Task.find({
+        $or: [
+          { assignee: req.user.userId },   // tasks assigned TO this member
+          { assignee: req.user.email },    // some UIs store email as assignee
+          { user: req.user.userId },       // tasks created BY this member
+        ]
+      }).sort({ createdAt: -1 });
     }
     res.json(tasks);
   } catch (error) {
@@ -51,7 +59,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
     if (req.user.role === 'Admin' || req.user.role === 'Manager') {
       task = await Task.findById(req.params.id);
     } else {
-      task = await Task.findOne({ _id: req.params.id, user: req.user.userId });
+      task = await Task.findOne({
+        _id: req.params.id,
+        $or: [
+          { assignee: req.user.userId },
+          { assignee: req.user.email },
+          { user: req.user.userId },
+        ]
+      });
     }
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
@@ -117,7 +132,14 @@ router.get('/stats/summary', authMiddleware, async (req, res) => {
   try {
     let filter = {};
     if (req.user.role !== 'Admin' && req.user.role !== 'Manager') {
-      filter = { user: req.user.userId };
+      // Match same logic as GET / — assignee OR creator
+      filter = {
+        $or: [
+          { assignee: req.user.userId },
+          { assignee: req.user.email },
+          { user: req.user.userId },
+        ]
+      };
     }
     const [total, completed, inprogress, review, todo] = await Promise.all([
       Task.countDocuments(filter),

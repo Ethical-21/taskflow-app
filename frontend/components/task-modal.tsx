@@ -39,7 +39,7 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    assignee: currentUserName,
+    assignee: String(user._id || user.id || ""),  // store ID, not name
     priority: "Medium",
     dueDate: "",
     project: "",
@@ -73,7 +73,7 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
       setFormData({
         title: task.title || "",
         description: task.description || "",
-        assignee: task.assignee || currentUserName,
+        assignee: task.assignee || String(user._id || user.id || ""),
         priority: task.priority || "Medium",
         dueDate: task.dueDate
           ? new Date(task.dueDate).toISOString().split("T")[0]
@@ -85,7 +85,7 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
       setFormData({
         title: "",
         description: "",
-        assignee: currentUserName,
+        assignee: String(user._id || user.id || ""),  // default to self
         priority: "Medium",
         dueDate: "",
         project: "",
@@ -198,7 +198,8 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
                 </SelectTrigger>
                 <SelectContent>
                   {teamMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.name}>
+                    // value = member.id (MongoDB _id) so backend can match assignee === req.user.userId
+                    <SelectItem key={member.id} value={String(member.id)}>
                       {member.name}
                       {member.role && member.role !== "Team Member" && (
                         <span className="text-xs text-gray-400 ml-1">({member.role})</span>
@@ -206,7 +207,7 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
                     </SelectItem>
                   ))}
                   {teamMembers.length === 0 && (
-                    <SelectItem value={currentUserName}>{currentUserName}</SelectItem>
+                    <SelectItem value={String(user._id || user.id)}>{currentUserName}</SelectItem>
                   )}
                 </SelectContent>
               </Select>

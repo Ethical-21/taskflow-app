@@ -78,7 +78,23 @@ export default function KanbanBoard({ user }: KanbanBoardProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [userMap, setUserMap] = useState<Record<string, string>>({})  // id → displayName
   const { addNotification } = useNotifications()
+
+  // Fetch all users to resolve assignee IDs → names for display
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/auth/user/all-users`, { headers: getAuthHeaders() })
+        if (!res.ok) return
+        const data: { id: string; name: string }[] = await res.json()
+        const map: Record<string, string> = {}
+        data.forEach((u) => { map[String(u.id)] = u.name })
+        setUserMap(map)
+      } catch { /* non-critical — just show ID if lookup fails */ }
+    }
+    fetchUsers()
+  }, [])
 
   // ─── Fix #4: Fetch all tasks from backend ─────────────────────────────────
   const fetchTasks = useCallback(async () => {
@@ -208,10 +224,11 @@ export default function KanbanBoard({ user }: KanbanBoardProps) {
         )
         addNotification({ title: "Task Created", message: `New task "${created.title}" has been created`, type: "task" })
 
-        if (taskData.assignee && taskData.assignee !== userName) {
+        if (taskData.assignee && taskData.assignee !== String(user._id || user.id)) {
+          const assigneeName = userMap[taskData.assignee] || taskData.assignee
           addNotification({
             title: "Task Assigned",
-            message: `"${created.title}" has been assigned to ${taskData.assignee}`,
+            message: `"${created.title}" has been assigned to ${assigneeName}`,
             type: "task",
           })
         }
@@ -476,11 +493,15 @@ export default function KanbanBoard({ user }: KanbanBoardProps) {
                                     <div className="flex items-center justify-between border-t border-gray-50 pt-2">
                                       <div className="flex items-center text-xs text-gray-500 gap-1">
                                         <User className="h-3 w-3" />
-                                        <span className="truncate max-w-[100px]">{task.assignee}</span>
+                                        <span className="truncate max-w-[100px]">
+                                          {/* Resolve ID → name; fall back to value if not found */}
+                                          {userMap[task.assignee] || task.assignee}
+                                        </span>
                                       </div>
                                       <Avatar className="h-6 w-6">
                                         <AvatarFallback className="text-xs bg-gradient-to-r from-orange-400 to-red-500 text-white">
-                                          {task.assignee.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                                          {(userMap[task.assignee] || task.assignee)
+                                            .split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)}
                                         </AvatarFallback>
                                       </Avatar>
                                     </div>
