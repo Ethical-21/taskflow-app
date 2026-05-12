@@ -10,12 +10,17 @@ const userRoutes = require('./routes/user');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Fix #7 - Restrict CORS to known origin (localhost:3000 for dev)
-// For production, replace with your deployed frontend URL
+// Fix #7 - Restrict CORS to known origins
+// Supports localhost (dev) + Vercel (production) + any env-configured origin
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-];
+  // Production Vercel frontend URLs
+  'https://taskflow-app.vercel.app',
+  'https://taskflow-app-git-main-ethical-21.vercel.app',
+  // Allow any vercel.app subdomain for preview deployments
+  process.env.FRONTEND_URL,          // Optional: set in Render env vars
+].filter(Boolean);                   // Remove undefined entries
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (e.g. mobile apps, curl, Postman)
