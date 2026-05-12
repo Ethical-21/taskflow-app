@@ -79,30 +79,43 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     let updatedTask;
-    const updateData = {
-      title: req.body.title,
-      description: req.body.description,
-      status: req.body.status,
-      priority: req.body.priority,
-      dueDate: req.body.dueDate,
-      project: req.body.project,
-      tags: req.body.tags,
-      assignee: req.body.assignee,
-      createdBy: req.body.createdBy,
-    };
-    // Remove undefined fields
-    Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
     if (req.user.role === 'Admin' || req.user.role === 'Manager') {
+      // Admins & Managers can update ALL fields on ANY task
+      const updateData = {
+        title: req.body.title,
+        description: req.body.description,
+        status: req.body.status,
+        priority: req.body.priority,
+        dueDate: req.body.dueDate,
+        project: req.body.project,
+        tags: req.body.tags,
+        assignee: req.body.assignee,
+        createdBy: req.body.createdBy,
+      };
+      Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
       updatedTask = await Task.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
     } else {
+      // Team Members: can ONLY update status (drag & drop) on tasks assigned to them
+      // Corporate policy: they move their own task status but cannot edit title/priority/assignee
+      if (!req.body.status) {
+        return res.status(403).json({ message: 'Team Members can only update task status.' });
+      }
       updatedTask = await Task.findOneAndUpdate(
-        { _id: req.params.id, user: req.user.userId },
-        updateData,
+        {
+          _id: req.params.id,
+          $or: [
+            { assignee: req.user.userId },  // assigned to this member
+            { user: req.user.userId },      // or created by this member
+          ]
+        },
+        { status: req.body.status },        // only allow status change
         { new: true }
       );
     }
-    if (!updatedTask) return res.status(404).json({ message: 'Task not found' });
+
+    if (!updatedTask) return res.status(404).json({ message: 'Task not found or access denied.' });
     res.json(updatedTask);
   } catch (error) {
     console.error('Update task error:', error);

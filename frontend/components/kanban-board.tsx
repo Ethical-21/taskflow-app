@@ -244,6 +244,39 @@ export default function KanbanBoard({ user }: KanbanBoardProps) {
     }
   }
 
+  // ─── Status change (Move To menu — works for all roles) ────────────────────
+  const handleStatusChange = async (task: Task, newStatus: string) => {
+    if (task.status === newStatus) return
+
+    const destColumn = COLUMN_DEFINITIONS.find((c) => c.id === newStatus)
+
+    // Optimistic UI update
+    setColumns((prev) =>
+      prev.map((col) => {
+        if (col.id === task.status) return { ...col, tasks: col.tasks.filter((t) => t.id !== task.id) }
+        if (col.id === newStatus)   return { ...col, tasks: [...col.tasks, { ...task, status: newStatus }] }
+        return col
+      })
+    )
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/tasks/${task.id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) throw new Error("Failed to update status")
+      addNotification({
+        title: "Task Moved",
+        message: `"${task.title}" moved to ${destColumn?.title || newStatus}`,
+        type: "task",
+      })
+    } catch (err) {
+      console.error("Status change error:", err)
+      fetchTasks() // rollback
+    }
+  }
+
   // ─── Delete task ────────────────────────────────────────────────────────────
   const handleDeleteTask = async (taskId: string) => {
     const taskToDelete = columns.flatMap((col) => col.tasks).find((t) => t.id === taskId)
@@ -435,14 +468,38 @@ export default function KanbanBoard({ user }: KanbanBoardProps) {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleTaskClick(task) }}>
-                                            {user.role === "Team Member" ? "View Task" : "Edit Task"}
+                                            {user.role === "Team Member" ? "👁 View Task" : "✏️ Edit Task"}
                                           </DropdownMenuItem>
+
+                                          {/* Move To — available to ALL roles (members can move their assigned tasks) */}
+                                          {["todo", "inprogress", "review", "done"]
+                                            .filter((s) => s !== task.status)
+                                            .map((targetStatus) => {
+                                              const labels: Record<string, string> = {
+                                                todo: "📋 Move to To Do",
+                                                inprogress: "⚙️ Move to In Progress",
+                                                review: "🔍 Move to Review",
+                                                done: "✅ Move to Done",
+                                              }
+                                              return (
+                                                <DropdownMenuItem
+                                                  key={targetStatus}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleStatusChange(task, targetStatus)
+                                                  }}
+                                                >
+                                                  {labels[targetStatus]}
+                                                </DropdownMenuItem>
+                                              )
+                                            })}
+
                                           {(user.role === "Admin" || user.role === "Manager" || task.createdBy === user.name) && (
                                             <DropdownMenuItem
                                               onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id) }}
                                               className="text-red-600"
                                             >
-                                              Delete Task
+                                              🗑 Delete Task
                                             </DropdownMenuItem>
                                           )}
                                         </DropdownMenuContent>
