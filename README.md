@@ -13,11 +13,6 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-<br/>
-
-<img src="https://raw.githubusercontent.com/Ethical-21/taskflow-app/main/docs/screenshots/dashboard-preview.png" alt="TaskFlow Dashboard" width="90%" />
-
-</div>
 
 ---
 
