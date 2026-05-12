@@ -69,11 +69,17 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
 
   // Reset form when modal opens/task changes
   useEffect(() => {
+    // Always reset submitting state when modal opens — prevents stuck disabled button
+    setIsSubmitting(false)
+    setNewTag("")
+
+    const selfId = String(user._id || user.id || "")
+
     if (task) {
       setFormData({
         title: task.title || "",
         description: task.description || "",
-        assignee: task.assignee || String(user._id || user.id || ""),
+        assignee: task.assignee || selfId,
         priority: task.priority || "Medium",
         dueDate: task.dueDate
           ? new Date(task.dueDate).toISOString().split("T")[0]
@@ -85,14 +91,13 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
       setFormData({
         title: "",
         description: "",
-        assignee: String(user._id || user.id || ""),  // default to self
+        assignee: selfId,
         priority: "Medium",
         dueDate: "",
         project: "",
         tags: [],
       })
     }
-    setNewTag("")
   }, [task, isOpen, currentUserName])
 
   const isReadOnly = user.role === "Team Member" && !!task
@@ -100,9 +105,9 @@ export default function TaskModal({ isOpen, onClose, onSave, task, user }: TaskM
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.title.trim()) return
+    if (isSubmitting) return  // guard against double-click
     setIsSubmitting(true)
     onSave(formData)
-    // setIsSubmitting is reset by parent closing modal
   }
 
   const handleInputChange = (field: string, value: string) => {
