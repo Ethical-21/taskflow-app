@@ -6,8 +6,8 @@
 
 *A full-stack, role-based task management platform built for teams that ship.*
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_App-f97316?style=for-the-badge)](https://taskflow-app-flame-kappa.vercel.app)
-[![Status](https://img.shields.io/badge/Status-Production-brightgreen?style=for-the-badge)](https://taskflow-app-flame-kappa.vercel.app)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_App-f97316?style=for-the-badge)](https://taskflow-ctm.vercel.app)
+[![Status](https://img.shields.io/badge/Status-Production-brightgreen?style=for-the-badge)](https://taskflow-ctm.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![Express](https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express)](https://expressjs.com)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
@@ -40,7 +40,7 @@
 
 Built as part of an **IBM Internship Project**, TaskFlow demonstrates enterprise-level full-stack development with modern web technologies — from a responsive Next.js frontend to a secure Express.js REST API backed by MongoDB Atlas.
 
-> **🔗 Live Demo:** [taskflow-app-flame-kappa.vercel.app](https://taskflow-app-flame-kappa.vercel.app)
+> **🔗 Live Demo:** [taskflow-ctm.vercel.app](https://taskflow-ctm.vercel.app)
 
 ---
 
@@ -473,6 +473,6 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 **Built with ❤️ by Jay Tapodhan**
 
-[Live Demo](https://taskflow-app-flame-kappa.vercel.app) · [Report Bug](https://github.com/Ethical-21/taskflow-app/issues) · [Request Feature](https://github.com/Ethical-21/taskflow-app/issues)
+[Live Demo](https://taskflow-ctm.vercel.app) · [Report Bug](https://github.com/Ethical-21/taskflow-app/issues) · [Request Feature](https://github.com/Ethical-21/taskflow-app/issues)
 
 </div>
